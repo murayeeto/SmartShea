@@ -3,11 +3,20 @@ services:
     name: smartshea-backend
     env: python
     rootDir: skin-analyzer/backend
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+    buildCommand: |
+      python -m pip install --upgrade pip
+      pip install setuptools wheel
+      pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.18
+      - key: PORT
+        value: 8000
+      - key: PATH
+        value: /opt/render/project/python/bin:${PATH}
+      - key: PYTHONPATH
+        value: /opt/render/project/python
       - key: GITHUB_PAGES_URL
         value: https://murayeeto.github.io
       - key: UPLOAD_FOLDER

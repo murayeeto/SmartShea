@@ -4,7 +4,7 @@ echo.
 echo If this is the first time running, it will install dependencies first.
 echo This may take a few minutes.
 echo.
-echo The frontend will be available at http://localhost:3000
+echo The frontend will be available at http://localhost:8080
 echo.
 echo Press Ctrl+C to stop the server
 echo.

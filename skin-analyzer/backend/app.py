@@ -24,7 +24,11 @@ app = Flask(__name__)
 GITHUB_PAGES_URL = os.getenv('GITHUB_PAGES_URL', 'https://murayeeto.github.io')
 CORS(app, resources={
     r"/api/*": {
-        "origins": [GITHUB_PAGES_URL, "https://murayeeto.github.io/SmartShea"],
+        "origins": [
+            GITHUB_PAGES_URL,
+            "https://murayeeto.github.io/SmartShea",
+            "http://localhost:8080"  # Allow requests from frontend development server
+        ],
         "methods": ["POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
@@ -194,5 +198,5 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
+    port = int(os.getenv('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=False)

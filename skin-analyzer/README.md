@@ -55,7 +55,7 @@ For Windows users, we've included batch files to make running the application ea
    ```
    python app.py
    ```
-   The server will run on http://localhost:5000
+   The server will run on http://localhost:8000
 
 #### Frontend Setup
 
@@ -73,7 +73,7 @@ For Windows users, we've included batch files to make running the application ea
    ```
    npm start
    ```
-   The application will open in your browser at http://localhost:3000
+   The application will open in your browser at http://localhost:8080
 
 ## Usage
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { apiUrl } from '../config';
 
@@ -10,6 +10,15 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [cameraActive, setCameraActive] = useState(false);
+
+  // Cleanup camera stream when component unmounts
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -25,13 +34,24 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(err => {
+          console.error("Error playing video:", err);
+          setError("Error starting video stream: " + err.message);
+        });
       }
       setCameraActive(true);
     } catch (err) {
+      console.error("Error accessing camera:", err);
       setError("Error accessing camera: " + err.message);
     }
   };
@@ -46,21 +66,45 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
 
   const capturePhoto = () => {
     if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      
-      const dataUrl = canvas.toDataURL('image/jpeg');
-      setPreview(dataUrl);
-      
-      // Convert to blob for upload
-      canvas.toBlob((blob) => {
-        setImage(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }));
-      }, 'image/jpeg');
-      
-      stopCamera();
+      try {
+        // Create a canvas with fixed dimensions for consistent quality
+        const canvas = document.createElement('canvas');
+        const videoAspectRatio = videoRef.current.videoWidth / videoRef.current.videoHeight;
+        
+        // Set canvas size to maintain aspect ratio with good quality
+        canvas.width = 1280; // Standard HD width
+        canvas.height = Math.round(1280 / videoAspectRatio);
+        
+        const ctx = canvas.getContext('2d');
+        // Enable image smoothing for better quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw the video frame to canvas
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        
+        // Get high quality JPEG
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        setPreview(dataUrl);
+        
+        // Convert to blob with high quality
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              setImage(new File([blob], "camera-capture.jpg", { type: "image/jpeg" }));
+            } else {
+              setError("Failed to capture photo. Please try again.");
+            }
+          },
+          'image/jpeg',
+          0.9
+        );
+        
+        stopCamera();
+      } catch (err) {
+        console.error("Error capturing photo:", err);
+        setError("Error capturing photo: " + err.message);
+      }
     }
   };
 
@@ -133,6 +177,8 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
             ref={videoRef}
             autoPlay
             playsInline
+            onLoadedMetadata={() => videoRef.current.play()}
+            style={{ width: '100%', maxWidth: '500px', height: 'auto' }}
             className="camera-preview"
           />
           <div className="button-group">

@@ -1,6 +1,6 @@
 const config = {
   development: {
-    apiUrl: 'http://localhost:5000'
+    apiUrl: 'http://localhost:8000'
   },
   production: {
     apiUrl: 'https://smartshea-backend.onrender.com'
