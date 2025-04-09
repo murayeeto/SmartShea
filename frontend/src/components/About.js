@@ -1,10 +1,10 @@
 import React from 'react';
-// Define image paths from public directory with repository name
-const avaImage = '/SmartShea/images/about us/CD5D698B-08BF-4B61-A67F-78A7F44AA884.jpg';       // Ava Larkin
-const martinImage = '/SmartShea/images/about us/IMG_0828.jpg';    // Martin Solomon
-const ngangImage = '/SmartShea/images/about us/SPOILER_SPOILER_IMG_7484.jpg';     // Ngangseh Leboh
-const matthewImage = '/SmartShea/images/about us/Resized_IMG-20250407-WA0001_1744056142351.jpg';   // Matthew Little
-const christianImage = '/SmartShea/images/about us/HeadShot.png'; // Christian Avila
+// Define image paths from public directory
+const avaImage = process.env.PUBLIC_URL + '/images/about us/CD5D698B-08BF-4B61-A67F-78A7F44AA884.jpg';       // Ava Larkin
+const martinImage = process.env.PUBLIC_URL + '/images/about us/IMG_0828.jpg';    // Martin Solomon
+const ngangImage = process.env.PUBLIC_URL + '/images/about us/SPOILER_SPOILER_IMG_7484.jpg';     // Ngangseh Leboh
+const matthewImage = process.env.PUBLIC_URL + '/images/about us/Resized_IMG-20250407-WA0001_1744056142351.jpg';   // Matthew Little
+const christianImage = process.env.PUBLIC_URL + '/images/about us/HeadShot.png'; // Christian Avila
 
 const About = () => {
   // Use imported images in the correct order: Ngangseh, Martin, Christian, Matthew, Ava
