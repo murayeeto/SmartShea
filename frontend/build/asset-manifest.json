@@ -1,13 +1,20 @@
 {
   "files": {
-    "main.css": "/SmartShea/static/css/main.0227778d.css",
-    "main.js": "/SmartShea/static/js/main.ace5e0f8.js",
+    "main.css": "/SmartShea/static/css/main.77f2baa7.css",
+    "main.js": "/SmartShea/static/js/main.34c6574e.js",
+    "static/media/about-image3.png": "/SmartShea/static/media/about-image3.ccf84b3a89f208a1ac42.png",
+    "static/media/about-image1.png": "/SmartShea/static/media/about-image1.225e279b36af5ffd4c78.png",
+    "static/media/about-image2.png": "/SmartShea/static/media/about-image2.58f846fc52714ad9b07c.png",
+    "static/media/Logo.png": "/SmartShea/static/media/Logo.2b4d306868581f16d4fa.png",
+    "static/media/SmartShea.png": "/SmartShea/static/media/SmartShea.a572646123ed7af925b7.png",
+    "static/media/headshot.png": "/SmartShea/static/media/headshot.dcdfcd0306e0650f0e9b.png",
+    "static/media/about-image4.png": "/SmartShea/static/media/about-image4.4532ebaa97c79530e2cf.png",
     "index.html": "/SmartShea/index.html",
-    "main.0227778d.css.map": "/SmartShea/static/css/main.0227778d.css.map",
-    "main.ace5e0f8.js.map": "/SmartShea/static/js/main.ace5e0f8.js.map"
+    "main.77f2baa7.css.map": "/SmartShea/static/css/main.77f2baa7.css.map",
+    "main.34c6574e.js.map": "/SmartShea/static/js/main.34c6574e.js.map"
   },
   "entrypoints": [
-    "static/css/main.0227778d.css",
-    "static/js/main.ace5e0f8.js"
+    "static/css/main.77f2baa7.css",
+    "static/js/main.34c6574e.js"
   ]
 }
