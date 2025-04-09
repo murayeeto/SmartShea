@@ -1,0 +1,68 @@
+# Backend
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.virtualenv/
+ENV/
+.python-version
+**/venv/**
+../venv/
+**/env/**
+
+# Environment Variables
+.env
+.env.*
+
+# Uploads and Generated Files
+uploads/
+*.log
+temp_image.jpg
+
+# Model Files
+*.pth
+*.h5
+*.pkl
+*.model
+*.weights
+skin_classifier_model.pth
+
+# Dataset and Training Data
+backend/Dataset/
+Dataset/
+training_data/
+data/
+**/Dataset/**
+
+# Frontend
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+/build
+/dist
+/.next/
+/out/
+
+# OS and Editor files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
