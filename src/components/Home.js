@@ -9,7 +9,7 @@ const Home = () => {
       <div className="hero-section full-height">
         <div className="hero-content">
           <div className="hero-image-container">
-            <img src="/images/SmartShea.png" alt="SmartShea Product" className="hero-image" />
+            <img src="https://murayeeto.github.io/SmartShea/images/SmartShea.png" alt="SmartShea Product" className="hero-image" />
           </div>
           <div className="hero-text-container">
             <h1 className="hero-title">Natural Skincare Solutions</h1>
