@@ -5,24 +5,38 @@ import numpy as np
 from PIL import Image
 import io
 import base64
+from dotenv import load_dotenv
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 import logging
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
 
-# Create uploads directory if it doesn't exist
-UPLOAD_FOLDER = 'uploads'
+# Configure CORS for GitHub Pages
+GITHUB_PAGES_URL = os.getenv('GITHUB_PAGES_URL', 'https://murayeeto.github.io')
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [GITHUB_PAGES_URL, "https://murayeeto.github.io/SmartShea"],
+        "methods": ["POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+
+# Configure upload folder
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', '/tmp/uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Path to the trained model
 MODEL_PATH = 'skin_classifier_model.pth'
@@ -180,4 +194,5 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

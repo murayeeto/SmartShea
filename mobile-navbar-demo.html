@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartShea Mobile Navbar Demo</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #ffffff;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Navbar styles */
+        .navbar {
+            background-color: #ffffff;
+            color: #333;
+            padding: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+            height: 70px;
+        }
+        
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .navbar-logo a {
+            color: #5d4037;
+            text-decoration: none;
+        }
+        
+        .logo-image {
+            height: 60px;
+            width: auto;
+            max-width: 180px;
+            object-fit: contain;
+        }
+        
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: block;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        .hamburger {
+            width: 30px;
+            height: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .hamburger span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: #5d4037;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger.active span:nth-child(1) {
+            transform: translateY(10px) rotate(45deg);
+        }
+        
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger.active span:nth-child(3) {
+            transform: translateY(-10px) rotate(-45deg);
+        }
+        
+        /* Mobile slide-in menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background-color: #ffffff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        
+        .mobile-menu.open {
+            left: 0;
+        }
+        
+        .mobile-menu-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mobile-menu-close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #5d4037;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .mobile-nav-item {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mobile-nav-link {
+            display: block;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .mobile-nav-link:hover {
+            background-color: #f9f6eb;
+            color: #7ab51d;
+        }
+        
+        .mobile-submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f6eb;
+            display: none;
+        }
+        
+        .mobile-submenu.open {
+            display: block;
+        }
+        
+        .mobile-submenu-link {
+            display: block;
+            padding: 12px 20px 12px 40px;
+            color: #333;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .mobile-submenu-link:hover {
+            background-color: #f0e6c9;
+            color: #7ab51d;
+        }
+        
+        .mobile-navbar-icons {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        
+        .mobile-icon-link {
+            display: block;
+            padding: 12px 0;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        .mobile-icon-link:hover {
+            color: #7ab51d;
+        }
+        
+        /* Main content */
+        .main-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #5d4037;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .toggle-submenu {
+            float: right;
+            margin-right: 20px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <a href="#">
+                    <img src="public/images/Logo.png" alt="SmartShea Logo" class="logo-image">
+                </a>
+            </div>
+            
+            <div class="mobile-menu-toggle" id="menuToggle">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile slide-in menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-close" id="menuClose">×</div>
+        </div>
+        <ul class="mobile-nav-menu">
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Shop <span class="toggle-submenu" data-submenu="shop-submenu">+</span></a>
+                <ul class="mobile-submenu" id="shop-submenu">
+                    <li><a href="#" class="mobile-submenu-link">Products</a></li>
+                    <li><a href="#" class="mobile-submenu-link">Gift Packages</a></li>
+                </ul>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Quizzes <span class="toggle-submenu" data-submenu="quizzes-submenu">+</span></a>
+                <ul class="mobile-submenu" id="quizzes-submenu">
+                    <li><a href="#" class="mobile-submenu-link">Skin Type Quiz</a></li>
+                    <li><a href="#" class="mobile-submenu-link">Product Finder</a></li>
+                </ul>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Find Your Skintype</a>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">About <span class="toggle-submenu" data-submenu="about-submenu">+</span></a>
+                <ul class="mobile-submenu" id="about-submenu">
+                    <li><a href="#" class="mobile-submenu-link">About Us</a></li>
+                    <li><a href="#" class="mobile-submenu-link">Natural Shea Butter</a></li>
+                    <li><a href="#" class="mobile-submenu-link">Why SmartShea</a></li>
+                </ul>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Skincare Tips</a>
+            </li>
+        </ul>
+        <div class="mobile-navbar-icons">
+            <a href="#" class="mobile-icon-link">
+                <span class="icon">👤</span> Account
+            </a>
+            <a href="#" class="mobile-icon-link">
+                <span class="icon">🔍</span> Search
+            </a>
+            <a href="#" class="mobile-icon-link">
+                <span class="icon">🛒</span> Cart
+            </a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <h1>SmartShea Mobile Navbar Demo</h1>
+        <p>Click the hamburger menu icon in the top right to see the mobile slide-in menu.</p>
+        <p>This demonstrates how the navbar will look and function on mobile devices.</p>
+    </div>
+    
+    <script>
+        // Mobile menu functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuClose = document.getElementById('menuClose');
+        const hamburger = menuToggle.querySelector('.hamburger');
+        const toggleSubmenuButtons = document.querySelectorAll('.toggle-submenu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+            hamburger.classList.toggle('active');
+        });
+        
+        menuClose.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            hamburger.classList.remove('active');
+        });
+        
+        // Submenu toggle functionality
+        toggleSubmenuButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const submenuId = button.getAttribute('data-submenu');
+                const submenu = document.getElementById(submenuId);
+                
+                submenu.classList.toggle('open');
+                
+                if (button.textContent === '+') {
+                    button.textContent = '-';
+                } else {
+                    button.textContent = '+';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

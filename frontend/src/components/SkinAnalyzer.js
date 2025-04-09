@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
+import { apiUrl } from '../config';
 
 const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
   const [image, setImage] = useState(null);
@@ -73,7 +74,7 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/analyze', {
+      const response = await axios.post(`${apiUrl}/api/analyze`, {
         image: preview
       });
       

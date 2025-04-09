@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/SmartShea/static/css/main.0227778d.css",
+    "main.js": "/SmartShea/static/js/main.ace5e0f8.js",
+    "index.html": "/SmartShea/index.html",
+    "main.0227778d.css.map": "/SmartShea/static/css/main.0227778d.css.map",
+    "main.ace5e0f8.js.map": "/SmartShea/static/js/main.ace5e0f8.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0227778d.css",
+    "static/js/main.ace5e0f8.js"
+  ]
+}

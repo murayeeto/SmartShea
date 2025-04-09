@@ -24,13 +24,32 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Use constraints optimized for mobile devices
+      const constraints = {
+        video: {
+          facingMode: 'user', // Use front camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Ensure video plays by triggering play() after setting srcObject
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play().catch(e => {
+            console.error("Error playing video:", e);
+            setError("Error displaying camera preview: " + e.message);
+          });
+        };
       }
+      
       setCameraActive(true);
     } catch (err) {
+      console.error("Camera error:", err);
       setError("Error accessing camera: " + err.message);
     }
   };
@@ -73,13 +92,29 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/analyze', {
+      // Check if we're in development or production
+      const baseUrl = process.env.NODE_ENV === 'development'
+        ? 'http://localhost:5000'
+        : 'https://smartshea-api.herokuapp.com'; // Replace with your actual deployed backend URL
+      
+      const response = await axios.post(`${baseUrl}/api/analyze`, {
         image: preview
       });
       
       setResult(response.data);
     } catch (err) {
-      setError("Error analyzing image: " + (err.response?.data?.error || err.message));
+      console.error("Analysis error:", err);
+      
+      // Provide more helpful error messages
+      if (err.message.includes('Network Error')) {
+        setError("Network error: Please check your internet connection or try again later.");
+      } else if (err.response?.status === 413) {
+        setError("Image too large: Please use a smaller image or reduce the image quality.");
+      } else if (err.response?.status === 415) {
+        setError("Unsupported image format: Please use JPEG or PNG images.");
+      } else {
+        setError("Error analyzing image: " + (err.response?.data?.error || err.message));
+      }
     } finally {
       setLoading(false);
     }
@@ -132,8 +167,31 @@ const SkinAnalyzer = ({ setResult, setLoading, setError }) => {
             ref={videoRef}
             autoPlay
             playsInline
+            muted
             className="camera-preview"
+            style={{
+              width: '100%',
+              maxWidth: '500px',
+              height: 'auto',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              backgroundColor: '#f0f0f0',
+              display: 'block',
+              margin: '0 auto 15px auto'
+            }}
           />
+          <div className="camera-guide" style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '500px',
+            margin: '0 auto',
+            textAlign: 'center',
+            marginBottom: '10px'
+          }}>
+            <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>
+              Position your face in the center of the frame
+            </p>
+          </div>
           <div className="button-group">
             <button onClick={capturePhoto}>Take Photo</button>
             <button onClick={stopCamera}>Cancel</button>
