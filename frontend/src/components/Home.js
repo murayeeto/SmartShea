@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import productImage from '../assets/SmartShea.png';
 
 const Home = () => {
   return (
@@ -9,7 +10,7 @@ const Home = () => {
       <div className="hero-section full-height">
         <div className="hero-content">
           <div className="hero-image-container">
-            <img src={process.env.PUBLIC_URL + "/images/smartshea-product.svg"} alt="SmartShea Product" className="hero-image" />
+            <img src={productImage} alt="SmartShea Product" className="hero-image" />
           </div>
           <div className="hero-text-container">
             <h1 className="hero-title">Natural Skincare Solutions</h1>

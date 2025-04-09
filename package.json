@@ -1,45 +1,38 @@
 {
-  "name": "smartshea-frontend",
-  "version": "0.1.0",
-  "private": true,
-  "homepage": "https://murayeeto.github.io/SmartShea",
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.4.0",
-    "gh-pages": "^6.3.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
-  },
+  "name": "smartshea",
+  "version": "1.0.0",
+  "description": "SmartShea Skin Analyzer - AI-powered skincare recommendations",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "install:all": "bash install.sh",
+    "frontend:install": "cd frontend && npm install",
+    "frontend:start": "cd frontend && npm start",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:deploy": "cd frontend && npm run deploy",
+    "backend:install": "cd skin-analyzer/backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
+    "backend:start": "cd skin-analyzer/backend && source venv/bin/activate && python app.py",
+    "backend:install:win": "cd skin-analyzer/backend && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt",
+    "backend:start:win": "cd skin-analyzer/backend && .\\venv\\Scripts\\activate && python app.py",
+    "dev": "concurrently \"npm run backend:start\" \"npm run frontend:start\"",
+    "dev:win": "concurrently \"npm run backend:start:win\" \"npm run frontend:start\""
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/murayeeto/SmartShea.git"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "keywords": [
+    "ai",
+    "skincare",
+    "react",
+    "flask",
+    "pytorch"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/murayeeto/SmartShea/issues"
   },
-  "proxy": "http://localhost:5000"
+  "homepage": "https://github.com/murayeeto/SmartShea#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
 }

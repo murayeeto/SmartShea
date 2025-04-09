@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/Logo.png';
 
 const Navbar = () => {
   return (
@@ -7,7 +8,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link to="/">
-            <img src={process.env.PUBLIC_URL + "/images/logo mini.png"} alt="SmartShea Logo" className="logo-image" />
+            <img src={logo} alt="SmartShea Logo" className="logo-image" />
           </Link>
         </div>
         <ul className="nav-menu">
