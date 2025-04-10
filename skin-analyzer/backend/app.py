@@ -88,6 +88,7 @@ class_names = ["normal", "dry", "oily"]  # Default class names
 try:
     if os.path.exists(MODEL_PATH):
         logger.info(f"Loading model from {MODEL_PATH}")
+        logger.info("Model file exists and is accessible")
         
         # Load class indices first to determine number of classes
         if os.path.exists(CLASS_INDICES_PATH):
@@ -97,14 +98,28 @@ try:
         
         # Create and load the model
         model = SkinClassifier(len(class_names))
-        model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+        try:
+            # Try loading with default method
+            state_dict = torch.load(MODEL_PATH, map_location=device)
+            # Check if we need to remove 'module.' prefix (happens with DataParallel)
+            if list(state_dict.keys())[0].startswith('module.'):
+                state_dict = {k[7:]: v for k, v in state_dict.items()}
+            model.load_state_dict(state_dict)
+        except Exception as e:
+            # If that fails, try loading as a full model
+            model = torch.load(MODEL_PATH, map_location=device)
         model.to(device)
         model.eval()  # Set to evaluation mode
         logger.info("Model loaded successfully")
     else:
         logger.warning(f"Model file not found at {MODEL_PATH}. Using random predictions as fallback.")
+        logger.warning(f"Current working directory: {os.getcwd()}")
+        logger.warning(f"Directory contents: {os.listdir('.')}")
 except Exception as e:
     logger.error(f"Error loading model: {str(e)}")
+    logger.error(f"Error type: {type(e)}")
+    logger.error(f"Current working directory: {os.getcwd()}")
+    logger.error(f"Directory contents: {os.listdir('.')}")
     logger.warning("Using random predictions as fallback.")
 
 # Define image transformation
