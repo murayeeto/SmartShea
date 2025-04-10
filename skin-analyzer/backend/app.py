@@ -48,8 +48,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'skin_classifier_model.pth')
 CLASS_INDICES_PATH = os.path.join(os.path.dirname(__file__), 'class_indices.npy')
 
-# Define the device
+# Define the device and enable memory efficient optimizations
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.backends.cudnn.benchmark = True
+torch.backends.cudnn.deterministic = True
+if device.type == 'cpu':
+    torch.set_num_threads(1)  # Limit CPU threads to prevent memory issues
 logger.info(f"Using device: {device}")
 
 # Define the CNN model
@@ -71,10 +75,10 @@ class SkinClassifier(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(128 * 28 * 28, 512),
+            nn.Linear(128 * 14 * 14, 256),  # Reduced dimensions
             nn.ReLU(inplace=True),
             nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+            nn.Linear(256, num_classes)
         )
     
     def forward(self, x):
@@ -153,6 +157,11 @@ try:
         
         # Create and load the model
         model = SkinClassifier(len(class_names))
+        # Enable model optimization
+        if device.type == 'cpu':
+            model = torch.quantization.quantize_dynamic(
+                model, {torch.nn.Linear, torch.nn.Conv2d}, dtype=torch.qint8
+            )
         try:
             # Try loading with different methods
             try:
@@ -231,7 +240,7 @@ except Exception as e:
 
 # Define image transformation
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((112, 112)),  # Reduced image size
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
@@ -259,8 +268,16 @@ def analyze_skin(image_path):
     
     try:
         # Preprocess the image
-        img = Image.open(image_path).convert('RGB')
-        img_tensor = transform(img).unsqueeze(0).to(device)  # Add batch dimension and move to device
+        # Optimize image loading and processing
+        with Image.open(image_path) as img:
+            img = img.convert('RGB')
+            img_tensor = transform(img).unsqueeze(0)
+            
+        # Clear any cached memory
+        if hasattr(torch.cuda, 'empty_cache'):
+            torch.cuda.empty_cache()
+            
+        img_tensor = img_tensor.to(device)  # Move to device after processing
         
         # Make prediction
         with torch.no_grad():  # No need to track gradients
