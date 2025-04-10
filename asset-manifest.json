@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/SmartShea/static/css/main.66dffa86.css",
-    "main.js": "/SmartShea/static/js/main.2208e63c.js",
+    "main.css": "/SmartShea/static/css/main.59af28d3.css",
+    "main.js": "/SmartShea/static/js/main.b6877ee0.js",
     "static/media/about-image3.png": "/SmartShea/static/media/about-image3.ccf84b3a89f208a1ac42.png",
     "static/media/about-image1.png": "/SmartShea/static/media/about-image1.225e279b36af5ffd4c78.png",
     "static/media/about-image2.png": "/SmartShea/static/media/about-image2.58f846fc52714ad9b07c.png",
@@ -10,11 +10,11 @@
     "static/media/headshot.png": "/SmartShea/static/media/headshot.dcdfcd0306e0650f0e9b.png",
     "static/media/about-image4.png": "/SmartShea/static/media/about-image4.4532ebaa97c79530e2cf.png",
     "index.html": "/SmartShea/index.html",
-    "main.66dffa86.css.map": "/SmartShea/static/css/main.66dffa86.css.map",
-    "main.2208e63c.js.map": "/SmartShea/static/js/main.2208e63c.js.map"
+    "main.59af28d3.css.map": "/SmartShea/static/css/main.59af28d3.css.map",
+    "main.b6877ee0.js.map": "/SmartShea/static/js/main.b6877ee0.js.map"
   },
   "entrypoints": [
-    "static/css/main.66dffa86.css",
-    "static/js/main.2208e63c.js"
+    "static/css/main.59af28d3.css",
+    "static/js/main.b6877ee0.js"
   ]
 }
