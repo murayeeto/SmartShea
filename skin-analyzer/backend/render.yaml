@@ -10,27 +10,71 @@ services:
       pip install numpy==1.24.3 --no-cache-dir
       # Then install the rest
       pip install -r requirements.txt --no-cache-dir
-      # Debug file sizes
-      ls -lh skin_classifier_model.pth
-      # Create model directory and copy files
-      mkdir -p /opt/render/project/models
-      # Use tar to preserve file permissions and attributes
-      tar czf - skin_classifier_model.pth class_indices.npy | (cd /opt/render/project/models && tar xzf -)
-      # Verify copied files
-      ls -lh /opt/render/project/models/
-      ls -la /opt/render/project/models/
+      # Use Python to copy and verify files
+      python3 -c "
+import shutil, os, hashlib
+
+def get_file_hash(path):
+    with open(path, 'rb') as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+def verify_copy(src, dst):
+    src_size = os.path.getsize(src)
+    src_hash = get_file_hash(src)
+    print(f'{src} - Size: {src_size}, Hash: {src_hash}')
+    
+    dst_size = os.path.getsize(dst)
+    dst_hash = get_file_hash(dst)
+    print(f'{dst} - Size: {dst_size}, Hash: {dst_hash}')
+    
+    if src_size != dst_size or src_hash != dst_hash:
+        raise Exception(f'Copy verification failed for {src} -> {dst}')
+
+# Create destination directory
+os.makedirs('/opt/render/project/models', exist_ok=True)
+
+# Copy and verify model file
+shutil.copy2('skin_classifier_model.pth', '/opt/render/project/models/')
+verify_copy('skin_classifier_model.pth', '/opt/render/project/models/skin_classifier_model.pth')
+
+# Copy and verify indices file
+shutil.copy2('class_indices.npy', '/opt/render/project/models/')
+verify_copy('class_indices.npy', '/opt/render/project/models/class_indices.npy')
+"
     startCommand: |
-      pwd
-      ls -lh
-      mkdir -p models
-      # Use tar to preserve file attributes
-      cd /opt/render/project/models && tar czf - skin_classifier_model.pth class_indices.npy | (cd /opt/render/project/src/skin-analyzer/backend && tar xzf -)
-      # Verify files after copying
-      ls -lh
-      # Print file contents for debugging
-      file skin_classifier_model.pth
-      head -c 100 skin_classifier_model.pth | xxd
-      python -c "import torch; print(f'PyTorch version: {torch.__version__}')"
+      # Use Python to copy and verify files
+      python3 -c "
+import shutil, os, hashlib
+
+def get_file_hash(path):
+    with open(path, 'rb') as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+def verify_copy(src, dst):
+    src_size = os.path.getsize(src)
+    src_hash = get_file_hash(src)
+    print(f'{src} - Size: {src_size}, Hash: {src_hash}')
+    
+    dst_size = os.path.getsize(dst)
+    dst_hash = get_file_hash(dst)
+    print(f'{dst} - Size: {dst_size}, Hash: {dst_hash}')
+    
+    if src_size != dst_size or src_hash != dst_hash:
+        raise Exception(f'Copy verification failed for {src} -> {dst}')
+
+# Copy and verify files
+shutil.copy2('/opt/render/project/models/skin_classifier_model.pth', '.')
+verify_copy('/opt/render/project/models/skin_classifier_model.pth', 'skin_classifier_model.pth')
+
+shutil.copy2('/opt/render/project/models/class_indices.npy', '.')
+verify_copy('/opt/render/project/models/class_indices.npy', 'class_indices.npy')
+
+# Print file details
+with open('skin_classifier_model.pth', 'rb') as f:
+    print('First 100 bytes:', f.read(100).hex())
+"
+      # Print versions and start server
+      python -c "import torch; print(f'PyTorch version: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}')"
       python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"
       gunicorn --workers 1 --timeout 120 --log-level debug app:app
     envVars:
