@@ -11,6 +11,7 @@ import SkincareTips from './components/SkincareTips';
 import NaturalSheaButter from './components/NaturalSheaButter';
 import WhySmartShea from './components/WhySmartShea';
 import Quiz from './components/Quiz';
+import Subscriptions from './components/Subscriptions';
 
 function App() {
   const [result, setResult] = useState(null);
@@ -26,6 +27,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/skincare-tips" element={<SkincareTips />} />
           <Route path="/why-smartshea" element={<WhySmartShea />} />
           <Route path="/natural-shea-butter" element={<NaturalSheaButter />} />

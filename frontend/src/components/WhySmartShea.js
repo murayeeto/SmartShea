@@ -53,16 +53,12 @@ const WhySmartShea = () => {
             <p>Our proprietary algorithm analyzes your skin characteristics to recommend the perfect shea butter products for your specific needs.</p>
           </div>
           <div className="difference-card">
-            <h3>Customized Solutions</h3>
-            <p>No more one-size-fits-all skincare. Our recommendations are tailored to your unique skin type and concerns.</p>
-          </div>
-          <div className="difference-card">
             <h3>Pure, Unrefined Ingredients</h3>
             <p>We use only 100% natural, unrefined shea butter to ensure all beneficial properties remain intact.</p>
           </div>
           <div className="difference-card">
             <h3>Fair Trade Practices</h3>
-            <p>We work directly with women's cooperatives in West Africa, ensuring fair compensation and supporting local communities.</p>
+            <p>We want to work directly with women's cooperatives in West Africa, ensuring fair compensation and supporting local communities.</p>
           </div>
         </div>
       </div>
