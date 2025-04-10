@@ -24,7 +24,6 @@ uploads/
 temp_image.jpg
 
 # Model Files
-*.pth
 *.h5
 *.pkl
 *.model
