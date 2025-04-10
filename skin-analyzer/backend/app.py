@@ -27,7 +27,8 @@ CORS(app, resources={
         "origins": [
             GITHUB_PAGES_URL,
             "https://murayeeto.github.io/SmartShea",
-            "http://localhost:8080"  # Allow requests from frontend development server
+            "http://localhost:8080",  # Allow requests from frontend development server
+            "http://localhost:3000"   # Temporarily allow during transition
         ],
         "methods": ["POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
