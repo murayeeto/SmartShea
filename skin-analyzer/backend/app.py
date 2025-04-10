@@ -179,16 +179,15 @@ try:
                     model, {torch.nn.Linear, torch.nn.Conv2d}, dtype=torch.qint8
                 )
             
-            model.eval()  # Set to evaluation mode
+            # Set model to evaluation mode and log info
+            model.eval()
+            logger.info(f"Model architecture: {model}")
             logger.info("Model loaded successfully")
             
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
             logger.error(f"Model file size: {os.path.getsize(MODEL_PATH)} bytes")
             raise  # Re-raise the exception to be caught by outer try block
-        logger.info(f"Model architecture: {model}")  # Log model architecture
-        model.eval()  # Set to evaluation mode
-        logger.info("Model loaded successfully")
     else:
         logger.warning(f"Model file not found at {MODEL_PATH}. Using random predictions as fallback.")
         logger.warning(f"Current working directory: {os.getcwd()}")
@@ -244,10 +243,13 @@ def analyze_skin(image_path):
         }
     
     try:
-        # Optimize image loading and processing
+        # Optimize image loading and processing with memory efficiency
         with Image.open(image_path) as img:
-            img = img.convert('RGB')
-            img_tensor = transform(img).unsqueeze(0)
+            # Convert and resize in one step to minimize memory usage
+            img = img.convert('RGB').resize((112, 112), Image.Resampling.BILINEAR)
+            img_tensor = transforms.ToTensor()(img)
+            img_tensor = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])(img_tensor)
+            img_tensor = img_tensor.unsqueeze(0)
         
         # Clear any cached memory before inference
         if hasattr(torch.cuda, 'empty_cache'):
