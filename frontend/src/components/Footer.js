@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const [copySuccess, setCopySuccess] = useState(false);
+  
+  const handleCopyToClipboard = () => {
+    const currentUrl = window.location.origin + window.location.pathname;
+    navigator.clipboard.writeText(currentUrl)
+      .then(() => {
+        setCopySuccess(true);
+        // Reset the success message after 3 seconds
+        setTimeout(() => setCopySuccess(false), 3000);
+      })
+      .catch(err => {
+        console.error('Failed to copy URL: ', err);
+        alert('Failed to copy URL to clipboard');
+      });
+  };
   return (
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
           <h3>Join our circle</h3>
-          <p>Hey there! Take 15% off your first order of $45+ when you join!</p>
+          <p>Hey there! Take 20% off your first order of $35+ when you join!</p>
           <div className="subscribe-form">
             <input type="email" placeholder="email@example.com" className="email-input" />
             <button className="subscribe-button">Subscribe</button>
@@ -45,12 +60,28 @@ const Footer = () => {
           </div>
           
           <div className="footer-column">
-            <Link to="/rewards" className="footer-link">rewards program</Link>
-            <Link to="/refer" className="footer-link">refer a friend</Link>
-            <Link to="/mission" className="footer-link">brand mission</Link>
-            <Link to="/sustainability" className="footer-link">sustainability</Link>
-            <Link to="/recycle" className="footer-link">recycle with us</Link>
-            <Link to="/stores" className="footer-link">where to buy</Link>
+            <button
+              onClick={handleCopyToClipboard}
+              className="footer-link copy-link"
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                paddingLeft: '15px',
+                cursor: 'pointer',
+                textAlign: 'left',
+                fontSize: '1rem',
+                fontFamily: 'inherit',
+                textTransform: 'lowercase',
+                fontWeight: 'normal',
+                display: 'block',
+                position: 'relative'
+              }}
+            >
+              refer a friend {copySuccess && <span className="copy-tooltip">URL copied!</span>}
+            </button>
+            <Link to="/why-smartshea" className="footer-link">brand mission</Link>
+            <Link to="/why-smartshea" className="footer-link">sustainability</Link>
           </div>
         </div>
       </div>

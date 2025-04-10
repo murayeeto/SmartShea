@@ -32,7 +32,7 @@ const Navbar = () => {
               <Link to="/" className="nav-link">Shop</Link>
               <div className="dropdown-content">
                 <Link to="/products" className="dropdown-link">Products</Link>
-                <Link to="/products" className="dropdown-link">Gift Packages</Link>
+                <Link to="/subscriptions" className="dropdown-link">Subscriptions</Link>
               </div>
             </li>
             <li className="nav-item dropdown">
@@ -87,7 +87,7 @@ const Navbar = () => {
             </Link>
             <ul className={`mobile-submenu ${openSubmenus.shop ? 'open' : ''}`}>
               <li><Link to="/products" className="mobile-submenu-link" onClick={toggleMobileMenu}>Products</Link></li>
-              <li><Link to="/products" className="mobile-submenu-link" onClick={toggleMobileMenu}>Gift Packages</Link></li>
+              <li><Link to="/subscriptions" className="mobile-submenu-link" onClick={toggleMobileMenu}>Subscriptions</Link></li>
             </ul>
           </li>
           <li className="mobile-nav-item">
