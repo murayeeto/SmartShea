@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+import pickle
+import _pickle
 from flask_cors import CORS
 import os
 import numpy as np
@@ -81,11 +83,52 @@ class SkinClassifier(nn.Module):
         x = self.classifier(x)
         return x
 
+def backup_model_file(path):
+    """Create a backup of the model file"""
+    try:
+        backup_path = path + '.backup'
+        if os.path.exists(path):
+            with open(path, 'rb') as src, open(backup_path, 'wb') as dst:
+                dst.write(src.read())
+            logger.info(f"Created backup of model file at {backup_path}")
+            return True
+    except Exception as e:
+        logger.error(f"Failed to create backup: {str(e)}")
+        return False
+
+def verify_model_file(path):
+    """Verify the model file exists and is not corrupted"""
+    if not os.path.exists(path):
+        return False, "Model file does not exist"
+    
+    try:
+        file_size = os.path.getsize(path)
+        if file_size < 1000:  # Model file should be larger than 1KB
+            return False, f"Model file seems too small: {file_size} bytes"
+        
+        # Try to read the first few bytes
+        with open(path, 'rb') as f:
+            header = f.read(10)
+            if len(header) < 10:
+                return False, "Model file appears truncated"
+        
+        return True, "Model file appears valid"
+    except Exception as e:
+        return False, f"Error checking model file: {str(e)}"
+
 # Load the model if it exists
 model = None
 class_names = ["normal", "dry", "oily"]  # Default class names
 
 try:
+    # Create a backup of the model file
+    backup_model_file(MODEL_PATH)
+    
+    # First verify the model file
+    is_valid, message = verify_model_file(MODEL_PATH)
+    if not is_valid:
+        logger.error(f"Model file verification failed: {message}")
+        raise Exception(message)
     if os.path.exists(MODEL_PATH):
         logger.info(f"Loading model from {MODEL_PATH}")
         logger.info("Model file exists and is accessible")
@@ -99,16 +142,53 @@ try:
         # Create and load the model
         model = SkinClassifier(len(class_names))
         try:
-            # Try loading with default method
-            state_dict = torch.load(MODEL_PATH, map_location=device)
+            # Try loading with different methods
+            try:
+                # Method 1: Try loading with torch.load
+                state_dict = torch.load(MODEL_PATH, map_location=device)
+            except _pickle.UnpicklingError:
+                # Method 2: Try loading in a safer way
+                with open(MODEL_PATH, 'rb') as f:
+                    state_dict = torch.load(f, map_location=device, pickle_module=pickle)
             # Check if we need to remove 'module.' prefix (happens with DataParallel)
-            if list(state_dict.keys())[0].startswith('module.'):
-                state_dict = {k[7:]: v for k, v in state_dict.items()}
-            model.load_state_dict(state_dict)
+            if isinstance(state_dict, dict):
+                if any(k.startswith('module.') for k in state_dict.keys()):
+                    state_dict = {k[7:] if k.startswith('module.') else k: v for k, v in state_dict.items()}
+                model.load_state_dict(state_dict)
+            else:
+                logger.warning("Loaded state_dict is not a dictionary, trying to load as full model")
+                model = state_dict
         except Exception as e:
-            # If that fails, try loading as a full model
-            model = torch.load(MODEL_PATH, map_location=device)
+            logger.error(f"Detailed error during model loading: {str(e)}")
+            logger.error(f"Model file size: {os.path.getsize(MODEL_PATH)} bytes")
+            
+            # Try loading in legacy format
+            logger.info("Attempting to load model in legacy format...")
+            try:
+                with open(MODEL_PATH, 'rb') as f:
+                    # Try with encoding='latin1' for older PyTorch models
+                    state_dict = torch.load(f, map_location=device, encoding='latin1')
+                if isinstance(state_dict, dict):
+                    model.load_state_dict(state_dict)
+                    logger.info("Successfully loaded model in legacy format")
+                else:
+                    model = state_dict
+                    logger.info("Loaded full model in legacy format")
+            except Exception as e2:
+                logger.error(f"Failed to load in legacy format: {str(e2)}")
+                raise e  # Raise the original error if legacy loading fails
+            # If that fails, try loading as a full model with pickle safety
+            with open(MODEL_PATH, 'rb') as f:
+                # Read the first 1MB to check format
+                header = f.read(1024 * 1024)
+                f.seek(0)  # Reset file pointer
+                if b'torch' in header:
+                    model = torch.load(f, map_location=device)
+                else:
+                    logger.error("Model file does not appear to be a valid PyTorch model")
+                    raise Exception("Invalid model file format")
         model.to(device)
+        logger.info(f"Model architecture: {model}")  # Log model architecture
         model.eval()  # Set to evaluation mode
         logger.info("Model loaded successfully")
     else:
