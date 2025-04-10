@@ -157,21 +157,11 @@ try:
         
         # Create and load the model
         model = SkinClassifier(len(class_names))
-        # Enable model optimization
-        if device.type == 'cpu':
-            model = torch.quantization.quantize_dynamic(
-                model, {torch.nn.Linear, torch.nn.Conv2d}, dtype=torch.qint8
-            )
         try:
-            # Try loading with different methods
-            try:
-                # Method 1: Try loading with torch.load
-                state_dict = torch.load(MODEL_PATH, map_location=device)
-            except _pickle.UnpicklingError:
-                # Method 2: Try loading in a safer way
-                with open(MODEL_PATH, 'rb') as f:
-                    state_dict = torch.load(f, map_location=device, pickle_module=pickle)
-            # Check if we need to remove 'module.' prefix (happens with DataParallel)
+            # Load the model first
+            state_dict = torch.load(MODEL_PATH, map_location=device)
+            
+            # Remove module prefix if present
             if isinstance(state_dict, dict):
                 if any(k.startswith('module.') for k in state_dict.keys()):
                     state_dict = {k[7:] if k.startswith('module.') else k: v for k, v in state_dict.items()}
@@ -179,36 +169,23 @@ try:
             else:
                 logger.warning("Loaded state_dict is not a dictionary, trying to load as full model")
                 model = state_dict
-        except Exception as e:
-            logger.error(f"Detailed error during model loading: {str(e)}")
-            logger.error(f"Model file size: {os.path.getsize(MODEL_PATH)} bytes")
             
-            # Try loading in legacy format
-            logger.info("Attempting to load model in legacy format...")
-            try:
-                with open(MODEL_PATH, 'rb') as f:
-                    # Try with encoding='latin1' for older PyTorch models
-                    state_dict = torch.load(f, map_location=device, encoding='latin1')
-                if isinstance(state_dict, dict):
-                    model.load_state_dict(state_dict)
-                    logger.info("Successfully loaded model in legacy format")
-                else:
-                    model = state_dict
-                    logger.info("Loaded full model in legacy format")
-            except Exception as e2:
-                logger.error(f"Failed to load in legacy format: {str(e2)}")
-                raise e  # Raise the original error if legacy loading fails
-            # If that fails, try loading as a full model with pickle safety
-            with open(MODEL_PATH, 'rb') as f:
-                # Read the first 1MB to check format
-                header = f.read(1024 * 1024)
-                f.seek(0)  # Reset file pointer
-                if b'torch' in header:
-                    model = torch.load(f, map_location=device)
-                else:
-                    logger.error("Model file does not appear to be a valid PyTorch model")
-                    raise Exception("Invalid model file format")
-        model.to(device)
+            # Move model to device before quantization
+            model.to(device)
+            
+            # Apply quantization after loading if on CPU
+            if device.type == 'cpu':
+                model = torch.quantization.quantize_dynamic(
+                    model, {torch.nn.Linear, torch.nn.Conv2d}, dtype=torch.qint8
+                )
+            
+            model.eval()  # Set to evaluation mode
+            logger.info("Model loaded successfully")
+            
+        except Exception as e:
+            logger.error(f"Error loading model: {str(e)}")
+            logger.error(f"Model file size: {os.path.getsize(MODEL_PATH)} bytes")
+            raise  # Re-raise the exception to be caught by outer try block
         logger.info(f"Model architecture: {model}")  # Log model architecture
         model.eval()  # Set to evaluation mode
         logger.info("Model loaded successfully")
@@ -267,41 +244,75 @@ def analyze_skin(image_path):
         }
     
     try:
-        # Preprocess the image
         # Optimize image loading and processing
         with Image.open(image_path) as img:
             img = img.convert('RGB')
             img_tensor = transform(img).unsqueeze(0)
-            
-        # Clear any cached memory
+        
+        # Clear any cached memory before inference
         if hasattr(torch.cuda, 'empty_cache'):
             torch.cuda.empty_cache()
+        
+        try:
+            img_tensor = img_tensor.to(device)
             
-        img_tensor = img_tensor.to(device)  # Move to device after processing
-        
-        # Make prediction
-        with torch.no_grad():  # No need to track gradients
-            outputs = model(img_tensor)
-            probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
-            predicted_class_index = torch.argmax(probabilities).item()
-            confidence = probabilities[predicted_class_index].item()
-        
-        # Get skin type
-        skin_type = class_names[predicted_class_index]
-        
-        logger.info(f"Prediction: {skin_type} with confidence {confidence:.2f}")
-        
-        # Convert probabilities to dictionary
-        predictions_dict = {class_names[i]: float(probabilities[i]) for i in range(len(class_names))}
-        
-        return {
-            "skin_type": skin_type,
-            "recommendation": recommendations[skin_type],
-            "confidence": confidence,
-            "predictions": predictions_dict
-        }
+            # Make prediction with memory optimization
+            with torch.no_grad(), torch.inference_mode():
+                torch.set_grad_enabled(False)
+                outputs = model(img_tensor)
+                probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
+                predicted_class_index = torch.argmax(probabilities).item()
+                confidence = probabilities[predicted_class_index].item()
+            
+            # Get skin type and prepare response
+            skin_type = class_names[predicted_class_index]
+            predictions_dict = {class_names[i]: float(probabilities[i]) for i in range(len(class_names))}
+            
+            logger.info(f"Prediction: {skin_type} with confidence {confidence:.2f}")
+            
+            return {
+                "skin_type": skin_type,
+                "recommendation": recommendations[skin_type],
+                "confidence": confidence,
+                "predictions": predictions_dict
+            }
+            
+        except torch.cuda.OutOfMemoryError as e:
+            logger.error(f"CUDA out of memory error: {str(e)}")
+            # Clear CUDA cache and retry with CPU
+            if hasattr(torch.cuda, 'empty_cache'):
+                torch.cuda.empty_cache()
+            
+            # Move model and tensor to CPU
+            model.to('cpu')
+            img_tensor = img_tensor.to('cpu')
+            
+            # Retry prediction on CPU
+            with torch.no_grad(), torch.inference_mode():
+                outputs = model(img_tensor)
+                probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
+                predicted_class_index = torch.argmax(probabilities).item()
+                confidence = probabilities[predicted_class_index].item()
+            
+            # Move model back to original device
+            model.to(device)
+            
+            # Get skin type and prepare response
+            skin_type = class_names[predicted_class_index]
+            predictions_dict = {class_names[i]: float(probabilities[i]) for i in range(len(class_names))}
+            
+            return {
+                "skin_type": skin_type,
+                "recommendation": recommendations[skin_type],
+                "confidence": confidence,
+                "predictions": predictions_dict,
+                "note": "Processed on CPU due to memory constraints"
+            }
+            
     except Exception as e:
         logger.error(f"Error during prediction: {str(e)}")
+        logger.error(f"Error type: {type(e)}")
+        logger.error(f"Stack trace: {traceback.format_exc()}")
         skin_type = np.random.choice(class_names)
         return {
             "skin_type": skin_type,
