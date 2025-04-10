@@ -10,18 +10,26 @@ services:
       pip install numpy==1.24.3 --no-cache-dir
       # Then install the rest
       pip install -r requirements.txt --no-cache-dir
+      # Debug file sizes
+      ls -lh skin_classifier_model.pth
       # Create model directory and copy files
       mkdir -p /opt/render/project/models
-      cp -v skin_classifier_model.pth /opt/render/project/models/
-      cp -v class_indices.npy /opt/render/project/models/
+      # Use tar to preserve file permissions and attributes
+      tar czf - skin_classifier_model.pth class_indices.npy | (cd /opt/render/project/models && tar xzf -)
+      # Verify copied files
+      ls -lh /opt/render/project/models/
       ls -la /opt/render/project/models/
     startCommand: |
       pwd
-      ls -la
+      ls -lh
       mkdir -p models
-      cp -v /opt/render/project/models/skin_classifier_model.pth .
-      cp -v /opt/render/project/models/class_indices.npy .
-      ls -la
+      # Use tar to preserve file attributes
+      cd /opt/render/project/models && tar czf - skin_classifier_model.pth class_indices.npy | (cd /opt/render/project/src/skin-analyzer/backend && tar xzf -)
+      # Verify files after copying
+      ls -lh
+      # Print file contents for debugging
+      file skin_classifier_model.pth
+      head -c 100 skin_classifier_model.pth | xxd
       python -c "import torch; print(f'PyTorch version: {torch.__version__}')"
       python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"
       gunicorn --workers 1 --timeout 120 --log-level debug app:app

@@ -130,8 +130,20 @@ try:
         logger.error(f"Model file verification failed: {message}")
         raise Exception(message)
     if os.path.exists(MODEL_PATH):
+        file_size = os.path.getsize(MODEL_PATH)
         logger.info(f"Loading model from {MODEL_PATH}")
-        logger.info("Model file exists and is accessible")
+        logger.info(f"Model file size: {file_size} bytes")
+        
+        # Read and log file details
+        with open(MODEL_PATH, 'rb') as f:
+            header = f.read(100)
+            logger.info(f"First 100 bytes of model file: {header[:100].hex()}")
+        
+        # Log file permissions and ownership
+        import stat
+        st = os.stat(MODEL_PATH)
+        logger.info(f"File permissions: {oct(st.st_mode)}")
+        logger.info(f"File owner: {st.st_uid}, group: {st.st_gid}")
         
         # Load class indices first to determine number of classes
         if os.path.exists(CLASS_INDICES_PATH):
@@ -200,6 +212,21 @@ except Exception as e:
     logger.error(f"Error type: {type(e)}")
     logger.error(f"Current working directory: {os.getcwd()}")
     logger.error(f"Directory contents: {os.listdir('.')}")
+    
+    # Log detailed error information
+    import traceback
+    logger.error("Full traceback:")
+    logger.error(traceback.format_exc())
+    
+    # Try to read raw file content
+    try:
+        with open(MODEL_PATH, 'rb') as f:
+            content = f.read()
+            logger.error(f"Raw file size: {len(content)} bytes")
+            logger.error(f"File header (hex): {content[:100].hex()}")
+    except Exception as read_error:
+        logger.error(f"Failed to read file content: {str(read_error)}")
+    
     logger.warning("Using random predictions as fallback.")
 
 # Define image transformation
