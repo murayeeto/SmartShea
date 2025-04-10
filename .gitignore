@@ -28,7 +28,6 @@ temp_image.jpg
 *.pkl
 *.model
 *.weights
-skin_classifier_model.pth
 
 # Dataset and Training Data
 backend/Dataset/
