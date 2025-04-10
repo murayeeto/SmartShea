@@ -6,15 +6,19 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install setuptools wheel
+      # Install numpy first
+      pip install numpy==1.24.3 --no-cache-dir
+      # Then install the rest
       pip install -r requirements.txt --no-cache-dir
-      mkdir -p /opt/render/project/models
+      # Create model directory and copy files
+      mkdir -p /o\pt/render/project/models
       cp skin_classifier_model.pth /opt/render/project/models/
       cp class_indices.npy /opt/render/project/models/
     startCommand: |
       mkdir -p models
       cp /opt/render/project/models/skin_classifier_model.pth .
       cp /opt/render/project/models/class_indices.npy .
-      gunicorn app:app
+      gunicorn --workers 1 --timeout 120 app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.18
@@ -24,6 +28,10 @@ services:
         value: /opt/render/project/python/bin:${PATH}
       - key: PYTHONPATH
         value: /opt/render/project/python
+      - key: PYTORCH_ENABLE_MPS_FALLBACK
+        value: "1"
+      - key: NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        value: "0"
       - key: GITHUB_PAGES_URL
         value: https://murayeeto.github.io
       - key: UPLOAD_FOLDER
