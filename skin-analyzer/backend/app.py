@@ -75,10 +75,10 @@ class SkinClassifier(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(128 * 14 * 14, 256),  # Reduced dimensions
+            nn.Linear(128 * 28 * 28, 512),  # Match original dimensions
             nn.ReLU(inplace=True),
             nn.Dropout(0.5),
-            nn.Linear(256, num_classes)
+            nn.Linear(512, num_classes)
         )
     
     def forward(self, x):
@@ -216,7 +216,7 @@ except Exception as e:
 
 # Define image transformation
 transform = transforms.Compose([
-    transforms.Resize((112, 112)),  # Reduced image size
+    transforms.Resize((224, 224)),  # Match original dimensions
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
@@ -246,7 +246,7 @@ def analyze_skin(image_path):
         # Optimize image loading and processing with memory efficiency
         with Image.open(image_path) as img:
             # Convert and resize in one step to minimize memory usage
-            img = img.convert('RGB').resize((112, 112), Image.Resampling.BILINEAR)
+            img = img.convert('RGB').resize((224, 224), Image.Resampling.BILINEAR)
             img_tensor = transforms.ToTensor()(img)
             img_tensor = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])(img_tensor)
             img_tensor = img_tensor.unsqueeze(0)
