@@ -37,15 +37,14 @@ CORS(app, resources={
 
 # Configure upload folder
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', '/tmp/uploads')
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Path to the trained model
-MODEL_PATH = 'skin_classifier_model.pth'
-CLASS_INDICES_PATH = 'class_indices.npy'
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'skin_classifier_model.pth')
+CLASS_INDICES_PATH = os.path.join(os.path.dirname(__file__), 'class_indices.npy')
 
 # Define the device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -172,6 +171,11 @@ def analyze_skin(image_path):
             "error": str(e),
             "note": "Error during prediction, using random fallback"
         }
+
+@app.route('/', methods=['GET', 'HEAD'])
+def health_check():
+    """Health check endpoint for Render"""
+    return jsonify({"status": "healthy"}), 200
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
